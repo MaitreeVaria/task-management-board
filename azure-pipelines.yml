@@ -16,6 +16,17 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
+    cd backend
+    npm install
+  displayName: 'Install backend dependencies'
+
+- script: |
+    cd frontend
     npm install
     npm run build
-  displayName: 'npm install and build'
+  displayName: 'Install frontend dependencies and build'
+
+- script: |
+    cd backend
+    npm test --if-present
+  displayName: 'Run backend tests (if any)'
