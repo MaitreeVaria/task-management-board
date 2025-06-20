@@ -45,53 +45,29 @@ steps:
   displayName: 'Build Summary'
 
 # Deployment to AWS EC2
+- task: DownloadSecureFile@1
+  name: sshkey
+  inputs:
+    secureFile: 'aws-ssh-key'
+  displayName: 'Download SSH Key'
+
 - script: |
-    # Create .ssh directory if it doesn't exist
+    # Set up SSH
     mkdir -p ~/.ssh
-    
-    # Create SSH key file with proper formatting
-    echo "$(SSH_KEY)" | tr -d '\r' > ssh_key.pem
-    chmod 600 ssh_key.pem
-    
-    # Validate SSH key format
-    ssh-keygen -l -f ssh_key.pem
-    
-    # Add EC2 host to known hosts
+    cp $(sshkey.secureFilePath) ~/.ssh/aws_key
+    chmod 600 ~/.ssh/aws_key
     ssh-keyscan -H $(EC2_HOST) >> ~/.ssh/known_hosts
-    
-    echo "SSH setup completed ✅"
-  displayName: 'Setup SSH Connection'
+  displayName: 'Setup SSH'
 
 - script: |
     # Deploy to EC2
-    ssh -i ssh_key.pem -o StrictHostKeyChecking=no $(EC2_USER)@$(EC2_HOST) '
-      echo "🚀 Starting deployment..."
-      
-      # Navigate to project directory
-      cd /home/ec2-user/task-management-board
-      
-      # Pull latest code from GitHub
-      echo "📥 Pulling latest code..."
-      git pull origin main
-      
-      # Update backend dependencies
-      echo "📦 Updating backend..."
-      cd backend
-      npm install --production
-      
-      # Update frontend
-      echo "🎨 Building frontend..."
-      cd ../frontend
-      npm install
-      npm run build
-      
-      # Restart services with PM2
-      echo "🔄 Restarting services..."
-      sudo pm2 restart all
-      
-      # Check service status
+    ssh -i ~/.ssh/aws_key -o StrictHostKeyChecking=no $(EC2_USER)@$(EC2_HOST) '
+      cd /home/ec2-user/task-management-board &&
+      git pull origin main &&
+      cd backend && npm install --production &&
+      cd ../frontend && npm install && npm run build &&
+      sudo pm2 restart all &&
       echo "✅ Deployment completed!"
-      sudo pm2 status
     '
   displayName: 'Deploy to AWS EC2'
 
