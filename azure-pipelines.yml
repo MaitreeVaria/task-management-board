@@ -49,9 +49,12 @@ steps:
     # Create .ssh directory if it doesn't exist
     mkdir -p ~/.ssh
     
-    # Create SSH key file
-    echo "$(SSH_KEY)" > ssh_key.pem
+    # Create SSH key file with proper formatting
+    echo "$(SSH_KEY)" | tr -d '\r' > ssh_key.pem
     chmod 600 ssh_key.pem
+    
+    # Validate SSH key format
+    ssh-keygen -l -f ssh_key.pem
     
     # Add EC2 host to known hosts
     ssh-keyscan -H $(EC2_HOST) >> ~/.ssh/known_hosts
