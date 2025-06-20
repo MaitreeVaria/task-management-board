@@ -5,7 +5,7 @@ const pool = require('./models/database');
 const app = express();
 const PORT = 3001;
 
-app.use(cors());
+app.use(cors({  origin: ['http://3.129.45.165', 'http://localhost:3000', 'http://localhost:5173'],  credentials: true}));
 app.use(express.json());
 
 app.get('/', (req, res) => {

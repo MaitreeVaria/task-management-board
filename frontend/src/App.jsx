@@ -21,7 +21,7 @@ function App() {
   // FUNCTION: Get all tasks from your Node.js backend
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/tasks');
+      const response = await axios.get('http://3.129.45.165:3001/api/tasks');
       setTasks(response.data);
       setLoading(false);
     } catch (error) {
@@ -63,13 +63,13 @@ function App() {
     try {
       if (editingTask) {
         // UPDATING existing task
-        const response = await axios.put(`http://localhost:3001/api/tasks/${editingTask.id}`, taskData);
+        const response = await axios.put(`http://3.129.45.165:3001/api/tasks/${editingTask.id}`, taskData);
         setTasks(tasks.map(task => 
           task.id === editingTask.id ? response.data : task
         ));
       } else {
         // CREATING new task
-        const response = await axios.post('http://localhost:3001/api/tasks', taskData);
+        const response = await axios.post('http://3.129.45.165:3001/api/tasks', taskData);
         setTasks([...tasks, response.data]);
       }
       
@@ -87,7 +87,7 @@ function App() {
     }
     
     try {
-      await axios.delete(`http://localhost:3001/api/tasks/${taskId}`);
+      await axios.delete(`http://3.129.45.165:3001/api/tasks/${taskId}`);
       setTasks(tasks.filter(task => task.id !== taskId));
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -101,7 +101,7 @@ function App() {
       const task = tasks.find(t => t.id === taskId);
       const updatedTask = { ...task, status: newStatus };
       
-      const response = await axios.put(`http://localhost:3001/api/tasks/${taskId}`, updatedTask);
+      const response = await axios.put(`http://3.129.45.165:3001/api/tasks/${taskId}`, updatedTask);
       
       setTasks(tasks.map(task => 
         task.id === taskId ? response.data : task
