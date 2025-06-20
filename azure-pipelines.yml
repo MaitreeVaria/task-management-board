@@ -5,6 +5,9 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+- group: AWS-Deployment
+
 steps:
 - task: NodeTool@0
   inputs:
@@ -40,3 +43,53 @@ steps:
     echo "Frontend built: ✅"
     echo "Ready for deployment to AWS EC2"
   displayName: 'Build Summary'
+
+# Deployment to AWS EC2
+- script: |
+    # Create SSH key file
+    echo "$(SSH_KEY)" > ssh_key.pem
+    chmod 600 ssh_key.pem
+    
+    # Add EC2 host to known hosts
+    ssh-keyscan -H $(EC2_HOST) >> ~/.ssh/known_hosts
+  displayName: 'Setup SSH Connection'
+
+- script: |
+    # Deploy to EC2
+    ssh -i ssh_key.pem -o StrictHostKeyChecking=no $(EC2_USER)@$(EC2_HOST) '
+      echo "🚀 Starting deployment..."
+      
+      # Navigate to project directory
+      cd /home/ec2-user/task-management-board
+      
+      # Pull latest code from GitHub
+      echo "📥 Pulling latest code..."
+      git pull origin main
+      
+      # Update backend dependencies
+      echo "📦 Updating backend..."
+      cd backend
+      npm install --production
+      
+      # Update frontend
+      echo "🎨 Building frontend..."
+      cd ../frontend
+      npm install
+      npm run build
+      
+      # Restart services with PM2
+      echo "🔄 Restarting services..."
+      sudo pm2 restart all
+      
+      # Check service status
+      echo "✅ Deployment completed!"
+      sudo pm2 status
+    '
+  displayName: 'Deploy to AWS EC2'
+
+- script: |
+    # Cleanup
+    rm -f ssh_key.pem
+    echo "🎉 Pipeline completed successfully!"
+    echo "Your app is now live at: http://$(EC2_HOST)"
+  displayName: 'Cleanup and Success Message'
