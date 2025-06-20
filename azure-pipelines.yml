@@ -46,12 +46,17 @@ steps:
 
 # Deployment to AWS EC2
 - script: |
+    # Create .ssh directory if it doesn't exist
+    mkdir -p ~/.ssh
+    
     # Create SSH key file
     echo "$(SSH_KEY)" > ssh_key.pem
     chmod 600 ssh_key.pem
     
     # Add EC2 host to known hosts
     ssh-keyscan -H $(EC2_HOST) >> ~/.ssh/known_hosts
+    
+    echo "SSH setup completed ✅"
   displayName: 'Setup SSH Connection'
 
 - script: |
