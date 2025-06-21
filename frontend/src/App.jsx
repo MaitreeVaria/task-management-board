@@ -128,7 +128,7 @@ function App() {
       {/* Header */}
       <header className="app-header">
         <div className="header-content">
-          <h1 className="app-title">My Amazing Task Management Board</h1>
+          <h1 className="app-title">Task Management Board</h1>
           <button className="add-task-btn" onClick={handleAddTask}>
             <span className="btn-icon">+</span>
             Add Task
