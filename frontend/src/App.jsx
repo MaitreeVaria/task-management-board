@@ -4,21 +4,17 @@ import TaskForm from './components/TaskForm';
 import './App.css';
 
 function App() {
-  // STATE: Store all tasks from database
   const [tasks, setTasks] = useState([]);
-  // STATE: Track if we're still loading data from backend
   const [loading, setLoading] = useState(true);
-  // STATE: Control TaskForm visibility
   const [isFormOpen, setIsFormOpen] = useState(false);
-  // STATE: Track which task is being edited (null = creating new task)
   const [editingTask, setEditingTask] = useState(null);
 
-  // EFFECT: Run fetchTasks() when component first loads
+  // Run fetchTasks() when component first loads
   useEffect(() => {
     fetchTasks();
   }, []);
 
-  // FUNCTION: Get all tasks from your Node.js backend
+  // Get all tasks from your Node.js backend
   const fetchTasks = async () => {
     try {
       const response = await axios.get('http://3.129.45.165:3001/api/tasks');
@@ -30,7 +26,7 @@ function App() {
     }
   };
 
-  // FUNCTION: Calculate task statistics
+  // Calculate task statistics
   const getTaskStats = () => {
     const total = tasks.length;
     const todo = tasks.filter(task => task.status === 'todo').length;
@@ -40,25 +36,25 @@ function App() {
     return { total, todo, inProgress, done };
   };
 
-  // FUNCTION: Open form for creating new task
+  // Open form for creating new task
   const handleAddTask = () => {
     setEditingTask(null);  
     setIsFormOpen(true);   
   };
 
-  // FUNCTION: Open form for editing existing task
+  // Open form for editing existing task
   const handleEdit = (task) => {
     setEditingTask(task);
     setIsFormOpen(true);
   };
 
-  // FUNCTION: Close the form
+  // Close the form
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingTask(null);
   };
 
-  // FUNCTION: Save task (create or update)
+  // Save task (create or update)
   const handleSaveTask = async (taskData) => {
     try {
       if (editingTask) {
@@ -80,7 +76,7 @@ function App() {
     }
   };
 
-  // FUNCTION: Handle deleting a task
+  //  Handle deleting a task
   const handleDelete = async (taskId) => {
     if (!window.confirm('Are you sure you want to delete this task?')) {
       return;
