@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/auth/user', {
+      const response = await axios.get('http://3.129.45.165:3001/auth/user', {
         withCredentials: true  // Important: sends cookies/session
       });
       setUser(response.data);
@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.get('http://localhost:3001/auth/logout', {
+      await axios.get('http://3.129.45.165:3001/auth/logout', {
         withCredentials: true
       });
       setUser(null);
