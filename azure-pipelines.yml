@@ -22,8 +22,8 @@ steps:
 - script: |
     cd frontend
     npm install
-    npm run build
-  displayName: 'Install frontend dependencies and build'
+    NODE_ENV=production npm run build
+  displayName: 'Install frontend dependencies and build for production'
 
 - script: |
     echo "Skipping tests for now - no tests configured"
@@ -40,7 +40,7 @@ steps:
 - script: |
     echo "Build completed successfully!"
     echo "Backend built: ✅"
-    echo "Frontend built: ✅"
+    echo "Frontend built for production: ✅"
     echo "Ready for deployment to AWS EC2"
   displayName: 'Build Summary'
 
@@ -65,7 +65,7 @@ steps:
       cd /home/ec2-user/task-management-board &&
       git pull origin main &&
       cd backend && npm install --production &&
-      cd ../frontend && npm install && npm run build &&
+      cd ../frontend && npm install && NODE_ENV=production npm run build &&
       sudo pm2 restart all &&
       echo "✅ Deployment completed!"
     '

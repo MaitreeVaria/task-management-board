@@ -1,68 +1,66 @@
 const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
+const compression = require('compression');
 const pool = require('./models/database');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3001;
 
-app.use(cors({  origin: ['http://3.129.45.165', 'http://localhost:3000', 'http://localhost:5173'],  credentials: true}));
+// Compression middleware
+app.use(compression({
+  level: 6,        // Compression level (1-9, 6 is good balance)
+  threshold: 1024, // Only compress responses larger than 1KB
+}));
+// CORS configuration (keeping your existing origins)
+app.use(cors({
+  origin: ['http://3.129.45.165', 'http://localhost:3000', 'http://localhost:5173','http://3.129.45.165:3000','http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'],
+  credentials: true
+}));
+
 app.use(express.json());
 
+// Session configuration
+app.use(session({
+  store: new PgSession({
+    pool: pool,
+    tableName: 'user_sessions'
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: false
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Your existing home route
 app.get('/', (req, res) => {
   console.log('GET / request received');
   res.json({ message: 'Server is running!' });
 });
 
-// GET all tasks
-app.get('/api/tasks', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM tasks ORDER BY created_at DESC');
-      res.json(result.rows);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-  
-  // CREATE a new task
-  app.post('/api/tasks', async (req, res) => {
-    try {
-      const { title, description, priority } = req.body;
-      const result = await pool.query(
-        'INSERT INTO tasks (title, description, priority) VALUES ($1, $2, $3) RETURNING *',
-        [title, description, priority || 'medium']
-      );
-      res.json(result.rows[0]);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-  
-  // UPDATE a task
-  app.put('/api/tasks/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { title, description, status, priority } = req.body;
-      const result = await pool.query(
-        'UPDATE tasks SET title = $1, description = $2, status = $3, priority = $4 WHERE id = $5 RETURNING *',
-        [title, description, status, priority, id]
-      );
-      res.json(result.rows[0]);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-  
-  // DELETE a task
-  app.delete('/api/tasks/:id', async (req, res) => {
-    try {
-      const { id } = req.params;
-      await pool.query('DELETE FROM tasks WHERE id = $1', [id]);
-      res.json({ message: 'Task deleted successfully' });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
+// Auth routes (login/logout)
+app.use('/auth', require('./routes/auth'));
 
+// Middleware to protect API routes
+const requireAuth = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'Authentication required' });
+};
+
+// Protected task routes (your existing CRUD functions, now with auth)
+app.use('/api/tasks', requireAuth, require('./routes/tasks'));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
