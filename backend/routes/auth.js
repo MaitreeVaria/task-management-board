@@ -5,11 +5,20 @@ const pool = require('../models/database');
 
 const router = express.Router();
 
+// Environment-based configuration
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const BASE_URL = NODE_ENV === 'production' 
+  ? 'http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'
+  : 'http://localhost:3001';
+const FRONTEND_URL = NODE_ENV === 'production'
+  ? 'http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'
+  : 'http://localhost:3000';
+
 // Configure Google OAuth Strategy
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "/auth/google/callback"
+  callbackURL: `${BASE_URL}/auth/google/callback`
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     console.log('Google profile:', profile);
@@ -61,7 +70,7 @@ router.get('/google',
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect('${process.env.CLIENT_URL}/dashboard');
+    res.redirect(`${FRONTEND_URL}/dashboard`);
   }
 );
 

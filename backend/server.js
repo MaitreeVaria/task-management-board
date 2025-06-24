@@ -8,22 +8,31 @@ const pool = require('./models/database');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Compression middleware
 app.use(compression({
   level: 6,        // Compression level (1-9, 6 is good balance)
   threshold: 1024, // Only compress responses larger than 1KB
 }));
-// CORS configuration (keeping your existing origins)
+
+// CORS configuration for production
+const allowedOrigins = NODE_ENV === 'production' 
+  ? [
+      'http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com',
+      'https://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'
+    ]
+  : ['http://localhost:3000', 'http://localhost:5173'];
+
 app.use(cors({
-  origin: ['http://3.129.45.165', 'http://localhost:3000', 'http://localhost:5173','http://3.129.45.165:3000','http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'],
+  origin: allowedOrigins,
   credentials: true
 }));
 
 app.use(express.json());
 
-// Session configuration
+// Session configuration for production
 app.use(session({
   store: new PgSession({
     pool: pool,
@@ -34,7 +43,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: { 
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    secure: false
+    secure: NODE_ENV === 'production', // Use secure cookies in production
+    httpOnly: true,
+    sameSite: NODE_ENV === 'production' ? 'strict' : 'lax'
   }
 }));
 

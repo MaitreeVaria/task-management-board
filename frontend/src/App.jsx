@@ -3,6 +3,7 @@ import axios from 'axios';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import TaskForm from './components/TaskForm';
+import { API_BASE_URL } from './config';
 import './App.css';
 
 // Your task board component (extracted from App)
@@ -36,7 +37,7 @@ const fetchTasks = useCallback(async () => {
       ...filters
     });
 
-    const response = await axios.get(`http://3.129.45.165:3001/api/tasks?${queryParams}`, {
+    const response = await axios.get(`${API_BASE_URL}/api/tasks?${queryParams}`, {
       withCredentials: true
     });
     
@@ -82,14 +83,14 @@ useEffect(() => {
   const handleSaveTask = async (taskData) => {
     try {
       if (editingTask) {
-        const response = await axios.put(`http://3.129.45.165:3001/api/tasks/${editingTask.id}`, taskData, {
+        const response = await axios.put(`${API_BASE_URL}/api/tasks/${editingTask.id}`, taskData, {
           withCredentials: true
         });
         setTasks(tasks.map(task => 
           task.id === editingTask.id ? response.data : task
         ));
       } else {
-        const response = await axios.post('http://3.129.45.165:3001/api/tasks', taskData, {
+        const response = await axios.post(`${API_BASE_URL}/api/tasks`, taskData, {
           withCredentials: true
         });
         setTasks([...tasks, response.data]);
@@ -107,7 +108,7 @@ useEffect(() => {
     }
     
     try {
-      await axios.delete(`http://3.129.45.165:3001/api/tasks/${taskId}`, {
+      await axios.delete(`${API_BASE_URL}/api/tasks/${taskId}`, {
         withCredentials: true
       });
       setTasks(tasks.filter(task => task.id !== taskId));
@@ -122,7 +123,7 @@ useEffect(() => {
       const task = tasks.find(t => t.id === taskId);
       const updatedTask = { ...task, status: newStatus };
       
-      const response = await axios.put(`http://3.129.45.165:3001/api/tasks/${taskId}`, updatedTask, {
+      const response = await axios.put(`${API_BASE_URL}/api/tasks/${taskId}`, updatedTask, {
         withCredentials: true
       });
       

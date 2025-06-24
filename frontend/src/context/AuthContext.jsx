@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const AuthContext = createContext();
 
@@ -15,12 +16,12 @@ export function AuthProvider({ children }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await axios.get('http://3.129.45.165:3001/auth/user', {
+      const response = await axios.get(`${API_BASE_URL}/auth/user`, {
         withCredentials: true  // Important: sends cookies/session
       });
       setUser(response.data);
       console.log('User logged in:', response.data);
-    } catch (error) {
+    } catch {
       console.log('User not logged in');
       setUser(null);
     }
@@ -29,7 +30,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.get('http://3.129.45.165:3001/auth/logout', {
+      await axios.get(`${API_BASE_URL}/auth/logout`, {
         withCredentials: true
       });
       setUser(null);
