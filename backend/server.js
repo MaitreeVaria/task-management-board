@@ -17,16 +17,13 @@ app.use(compression({
   threshold: 1024, // Only compress responses larger than 1KB
 }));
 
-// CORS configuration for production
-const allowedOrigins = NODE_ENV === 'production' 
-  ? [
-      'http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com',
-      'https://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'
-    ]
-  : ['http://localhost:3000', 'http://localhost:5173'];
-
+// CORS configuration (allow local and EC2 frontend)
 app.use(cors({
-  origin: allowedOrigins,
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://ec2-3-129-45-165.us-east-2.compute.amazonaws.com'
+  ],
   credentials: true
 }));
 
@@ -43,9 +40,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: { 
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    secure: NODE_ENV === 'production', // Use secure cookies in production
+    secure: false, // Use secure cookies in production
     httpOnly: true,
-    sameSite: NODE_ENV === 'production' ? 'strict' : 'lax'
+    sameSite: 'lax'
   }
 }));
 
